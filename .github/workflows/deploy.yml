@@ -1,0 +1,30 @@
+name: Deploy to safetynet.sadken.co.uk
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:    # also allows manual trigger from GitHub UI
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to home server
+        uses: appleboy/ssh-action@v1
+        with:
+          host:     ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key:      ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            set -e
+
+            # Pull latest code
+            cd ~/apps/safetynet
+            git pull origin main
+
+            # Run the universal deploy script
+            ~/homeserver/deploy.sh ~/apps/safetynet

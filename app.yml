@@ -1,0 +1,3 @@
+# SafetyNet app config — read by homeserver/deploy.sh
+name: safetynet
+subdomain: safetynet

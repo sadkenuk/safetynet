@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SafetyNet — Local Crime Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;1,300&family=Azeret+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div id="app">
+
+  <div id="sidebar">
+
+    <!-- ── Header: location + date range ── -->
+    <div id="sidebar-header">
+      <div class="header-top">
+        <div>
+          <div class="eyebrow" id="force-eyebrow">UK Police · Street-level crime</div>
+          <h1>Safety<em>Net</em></h1>
+          <div class="subtitle">Community safety intelligence · data.police.uk</div>
+        </div>
+        <button class="about-btn" id="about-btn" title="About SafetyNet">?</button>
+      </div>
+
+      <!-- Postcode search -->
+      <div class="postcode-form">
+        <input class="postcode-input" id="postcode-input" type="text"
+               placeholder="Enter postcode…" value="SO43 7NY" maxlength="8" />
+        <button class="postcode-btn" id="postcode-btn">Search</button>
+      </div>
+      <div class="location-label" id="location-label">Lyndhurst High Street</div>
+      <div class="postcode-error" id="postcode-error" style="display:none"></div>
+
+      <!-- Date range (here so location + period are always visible together) -->
+      <div class="date-range" style="margin-top:14px;">
+        <div class="range-row">
+          <span class="range-label">From</span>
+          <select id="range-from" class="month-select"></select>
+        </div>
+        <div class="range-row">
+          <span class="range-label">To</span>
+          <select id="range-to" class="month-select"></select>
+        </div>
+        <button id="apply-range" class="apply-btn">Apply Date Filter</button>
+      </div>
+    </div>
+
+    <div id="sidebar-scroll">
+
+      <!-- ── Stats ── -->
+      <div class="stats-grid">
+        <div class="stat-cell">
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-label">Crimes reported</div>
+          <div class="stat-sub">within 1 mile</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value" id="stat-unresolved">—</div>
+          <div class="stat-label">No outcome yet</div>
+          <div class="stat-sub">crimes with no result recorded</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value sm" id="stat-outcome-rate">—</div>
+          <div class="stat-label">Followed up</div>
+          <div class="stat-sub">crimes where police recorded what happened</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value sm" id="stat-stops">—</div>
+          <div class="stat-label">Police stops</div>
+          <div class="stat-sub">people stopped &amp; searched</div>
+        </div>
+        <div class="stat-cell wide">
+          <div class="stat-label">Most reported crime type</div>
+          <div id="stat-top" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;color:var(--text-on);margin-top:3px;">—</div>
+          <div class="period-tag" id="stat-period">Loading…</div>
+        </div>
+      </div>
+
+      <!-- ── Monthly trend ── -->
+      <div class="section">
+        <div class="section-title">Crime trend by month</div>
+        <div class="section-desc">Total reported crimes per month in the selected period</div>
+        <div id="trend-chart"><span class="info-text">Loading…</span></div>
+      </div>
+
+      <!-- ── Crime type filter ── -->
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Crime types</div>
+            <div class="section-desc">Tap any type to hide or show it on the map</div>
+          </div>
+          <div class="cat-list-actions">
+            <button class="cat-action-btn" id="btn-cats-all">All</button>
+            <button class="cat-action-btn" id="btn-cats-none">None</button>
+          </div>
+        </div>
+        <div class="cat-list" id="cat-list"></div>
+      </div>
+
+      <!-- ── Outcomes filter ── -->
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-title">What happened next</div>
+            <div class="section-desc">The outcome police recorded for each crime. Tap to filter the map — e.g. hide "No outcome recorded" to see only crimes that were followed up.</div>
+          </div>
+          <div class="cat-list-actions">
+            <button class="cat-action-btn" id="btn-outcomes-all">All</button>
+            <button class="cat-action-btn" id="btn-outcomes-none">None</button>
+          </div>
+        </div>
+        <div class="cat-list" id="outcome-list"><span class="info-text">Loading…</span></div>
+      </div>
+
+      <!-- ── Top streets filter ── -->
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Streets with most incidents</div>
+            <div class="section-desc">Tap a street to hide its crimes from the map</div>
+          </div>
+          <div class="cat-list-actions">
+            <button class="cat-action-btn" id="btn-streets-all">All</button>
+            <button class="cat-action-btn" id="btn-streets-none">None</button>
+          </div>
+        </div>
+        <div class="cat-list" id="streets-list"><span class="info-text">Loading…</span></div>
+      </div>
+
+      <!-- ── Stop & Search ── -->
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Stop &amp; Search</div>
+            <div class="section-desc">Times police stopped and searched someone in this area. Each stop is logged by law — this data shows how often it happens and whether anything was found.</div>
+          </div>
+          <button class="mini-btn" id="stops-map-btn" style="display:none">Show on map</button>
+        </div>
+        <div id="stops-content">
+          <span class="info-text"><span class="mini-spinner"></span>Loading…</span>
+        </div>
+      </div>
+
+      <!-- ── Local Priorities ── -->
+      <div class="section">
+        <div class="section-title">Local police priorities</div>
+        <div class="section-desc">Issues your local police team say they are actively working on in this area</div>
+        <div id="priorities-list">
+          <span class="info-text"><span class="mini-spinner"></span>Loading…</span>
+        </div>
+      </div>
+
+    </div><!-- /sidebar-scroll -->
+
+    <div id="sidebar-footer">
+      <div class="footer-text">
+        Data: <a href="https://data.police.uk" target="_blank">data.police.uk</a>
+        &amp; <a href="https://postcodes.io" target="_blank">postcodes.io</a> ·
+        <a href="#" id="footer-about-link">About &amp; Legal</a>
+      </div>
+    </div>
+  </div><!-- /sidebar -->
+
+  <div id="map-wrap">
+    <div id="map"></div>
+    <button id="map-theme-btn" class="map-theme-btn">☀ Light map</button>
+    <div id="loading">
+      <div class="spinner"></div>
+      <div class="loading-label" id="loading-label">Fetching available dates…</div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ── About overlay ── -->
+<div id="about-overlay" class="about-overlay hidden" role="dialog" aria-modal="true" aria-label="About SafetyNet">
+  <div class="about-modal">
+    <button class="about-close" id="about-close" aria-label="Close">✕</button>
+
+    <div class="about-logo">Safety<em>Net</em></div>
+    <p class="about-tagline">Helping communities understand crime in their local area using publicly available police data.</p>
+
+    <div class="about-section">
+      <h3>What is SafetyNet?</h3>
+      <p>SafetyNet is a free, independent tool that lets anyone look up street-level crime data for any postcode in England, Wales or Northern Ireland. It pulls together official police records so local residents, community groups and neighbourhood watch organisations can see what is happening near them — clearly and without jargon.</p>
+    </div>
+
+    <div class="about-section">
+      <h3>How to use it</h3>
+      <p>Enter your postcode to see all crimes reported within one mile over the last six months. Use the date range to focus on a specific period, and tap any crime type, outcome or street in the sidebar to filter the map. Orange diamonds show stop and search incidents — toggle them on using the button in the Stop &amp; Search section.</p>
+    </div>
+
+    <div class="about-section">
+      <h3>Where does the data come from?</h3>
+      <p>All crime data comes from the <strong>UK Police open data API</strong> (<a href="https://data.police.uk" target="_blank">data.police.uk</a>), maintained by the Home Office. This is the same data police forces publish for transparency and public accountability. It is updated monthly and covers all 43 territorial police forces across England and Wales, plus the Police Service of Northern Ireland.</p>
+      <p>Postcode lookups use <a href="https://postcodes.io" target="_blank">postcodes.io</a>, a free and open postcode database.</p>
+    </div>
+
+    <div class="about-section">
+      <h3>Your privacy — no personal data, ever</h3>
+      <p>SafetyNet does <strong>not</strong> collect, store, share or sell any personal data. There are no accounts, no cookies, no tracking and no analytics. The postcode you enter is used only to look up a map location — it is never logged or stored anywhere.</p>
+      <p>All data processing happens in your browser. Nothing you enter is sent to any SafetyNet server.</p>
+    </div>
+
+    <div class="about-section">
+      <h3>Crime locations are anonymised</h3>
+      <p>By law, police must anonymise the location of every crime before publishing it. Incidents are shown at the nearest street, road or public area — <strong>never at the precise address</strong>. This protects the privacy of victims and is a legal requirement under the Police Reform and Social Responsibility Act 2011.</p>
+    </div>
+
+    <div class="about-section">
+      <h3>Stop &amp; Search</h3>
+      <p>Police forces are legally required to record every stop and search under the Police and Criminal Evidence Act 1984 and the Criminal Justice and Public Order Act 1994. This data is published publicly to ensure police accountability and transparency. It shows the stated reason for the stop, the outcome and basic demographic information — no names or identifying details are ever included.</p>
+    </div>
+
+    <div class="about-section">
+      <h3>Limitations to be aware of</h3>
+      <ul>
+        <li>Data is typically <strong>two to three months behind</strong> the current date, as forces submit records monthly.</li>
+        <li><strong>Not all crimes are reported</strong> to the police — this data only reflects recorded crime.</li>
+        <li>Outcomes are recorded over time — a crime may show "no outcome yet" simply because the investigation is ongoing, not because no action was taken.</li>
+        <li>Stop &amp; search data may not be available for all forces or all time periods.</li>
+        <li>Crime locations are approximate — a pin on a street does not mean the crime happened at any specific property on that street.</li>
+      </ul>
+    </div>
+
+    <div class="about-section">
+      <h3>Legal</h3>
+      <p>SafetyNet is an independent tool and is <strong>not affiliated with, endorsed by or connected to any police force, the Home Office or any government body</strong>. It is a community project built to make public data more accessible.</p>
+      <p>All data is provided under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/" target="_blank">Open Government Licence v3.0</a>. You are free to use and share the information displayed, provided you acknowledge the source (data.police.uk).</p>
+      <p>This tool is provided in good faith for informational purposes only. It should not be used as the sole basis for any legal, insurance or property decision.</p>
+    </div>
+
+    <button class="about-close-bottom" id="about-close-bottom">Close</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
