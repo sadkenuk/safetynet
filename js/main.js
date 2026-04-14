@@ -188,6 +188,26 @@ async function handlePostcodeSearch() {
   }
 }
 
+/* ── Share ───────────────────────────────────────────── */
+function initShare() {
+  document.getElementById('share-btn').addEventListener('click', () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('postcode', document.getElementById('postcode-input').value.trim());
+    url.searchParams.set('from', state.rangeFrom);
+    url.searchParams.set('to',   state.rangeTo);
+
+    if (navigator.share) {
+      navigator.share({ title: 'SafetyNet', url: url.toString() });
+    } else {
+      navigator.clipboard.writeText(url.toString()).then(() => {
+        const btn = document.getElementById('share-btn');
+        btn.textContent = '✓';
+        setTimeout(() => btn.textContent = '⤴', 2000);
+      });
+    }
+  });
+}
+
 /* ── About modal ─────────────────────────────────────── */
 function initAbout() {
   const overlay  = document.getElementById('about-overlay');
@@ -217,6 +237,7 @@ function initAbout() {
 async function main() {
   initMap();
   initAbout();
+  initShare();
   setLoading(true);
 
   try {
@@ -244,8 +265,24 @@ async function main() {
       if (e.key === 'Enter') handlePostcodeSearch();
     });
 
-    state.rangeFrom = state.allMonths[state.allMonths.length - 1];
-    state.rangeTo   = state.rangeFrom;
+    // Load from shared URL params if present
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('postcode')) {
+      document.getElementById('postcode-input').value = params.get('postcode');
+      await handlePostcodeSearch();
+    }
+
+    const fromParam = params.get('from');
+    const toParam   = params.get('to');
+    if (fromParam && toParam && state.allMonths.includes(fromParam) && state.allMonths.includes(toParam)) {
+      state.rangeFrom = fromParam;
+      state.rangeTo   = toParam;
+      document.getElementById('range-from').value = fromParam;
+      document.getElementById('range-to').value   = toParam;
+    } else {
+      state.rangeFrom = state.allMonths[state.allMonths.length - 1];
+      state.rangeTo   = state.rangeFrom;
+    }
 
     await loadData();
 
