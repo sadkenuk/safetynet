@@ -3,11 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SafetyNet — Local Crime Intelligence</title>
+  <title>SafetyNet — Community Crime Awareness</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;1,300&family=Azeret+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WCH9Q6KJ1Q"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WCH9Q6KJ1Q');
+  </script>
 </head>
 <body>
 <div id="app">
@@ -18,9 +27,9 @@
     <div id="sidebar-header">
       <div class="header-top">
         <div>
-          <div class="eyebrow" id="force-eyebrow">UK Police · Street-level crime</div>
+          <div class="eyebrow" id="force-eyebrow">Independent · Street-level data</div>
           <h1>Safety<em>Net</em></h1>
-          <div class="subtitle">Community safety intelligence · data.police.uk</div>
+          <div class="subtitle">Community crime awareness · not affiliated with police</div>
         </div>
         <button class="about-btn" id="about-btn" title="About SafetyNet">?</button>
       </div>
@@ -69,8 +78,8 @@
         </div>
         <div class="stat-cell">
           <div class="stat-value sm" id="stat-stops">—</div>
-          <div class="stat-label">Police stops</div>
-          <div class="stat-sub">people stopped &amp; searched</div>
+          <div class="stat-label">Stop &amp; search</div>
+          <div class="stat-sub">recorded incidents in this area</div>
         </div>
         <div class="stat-cell wide">
           <div class="stat-label">Most reported crime type</div>
@@ -147,8 +156,8 @@
 
       <!-- ── Local Priorities ── -->
       <div class="section">
-        <div class="section-title">Local police priorities</div>
-        <div class="section-desc">Issues your local police team say they are actively working on in this area</div>
+        <div class="section-title">Local policing priorities</div>
+        <div class="section-desc">Issues the local force has publicly stated they are focusing on — sourced from data.police.uk</div>
         <div id="priorities-list">
           <span class="info-text"><span class="mini-spinner"></span>Loading…</span>
         </div>
@@ -182,28 +191,37 @@
     <button class="about-close" id="about-close" aria-label="Close">✕</button>
 
     <div class="about-logo">Safety<em>Net</em></div>
-    <p class="about-tagline">Helping communities understand crime in their local area using publicly available police data.</p>
+    <p class="about-tagline">A community tool to help local residents understand crime in their area — independent, free and not affiliated with the police.</p>
+
+    <div class="about-section">
+      <h3>Why this was built</h3>
+      <p>SafetyNet was created by a resident of <strong>Lyndhurst</strong>, a village in the New Forest, after the community was hit by a wave of unsolved burglaries that made national news. The village found itself having to take matters into its own hands — organising residents, sharing information and trying to make sense of what was happening.</p>
+      <p>The problem was that the publicly available crime data existed, but it was buried in government datasets that most people had no idea how to access or interpret. SafetyNet was built to change that — to put that information in front of ordinary residents in a clear, usable format.</p>
+      <p>You can read more about what the Lyndhurst community went through in <a href="https://www.theguardian.com/uk-news/2023/sep/02/we-dont-need-police-the-new-forest-village-taking-the-law-into-its-own-hands" target="_blank">this Guardian article from 2023</a>.</p>
+    </div>
 
     <div class="about-section">
       <h3>What is SafetyNet?</h3>
-      <p>SafetyNet is a free, independent tool that lets anyone look up street-level crime data for any postcode in England, Wales or Northern Ireland. It pulls together official police records so local residents, community groups and neighbourhood watch organisations can see what is happening near them — clearly and without jargon.</p>
+      <p>SafetyNet is a free, independent community tool that lets anyone look up street-level crime data for any postcode in England, Wales or Northern Ireland. It is <strong>not a police application</strong> and has no connection to any police force, the Home Office or any government body. It simply makes publicly available data easier to understand.</p>
+      <p>It is built for local residents, community groups, neighbourhood watch organisations and anyone who wants to make more informed decisions about safety in their area.</p>
     </div>
 
     <div class="about-section">
       <h3>How to use it</h3>
-      <p>Enter your postcode to see all crimes reported within one mile over the last six months. Use the date range to focus on a specific period, and tap any crime type, outcome or street in the sidebar to filter the map. Orange diamonds show stop and search incidents — toggle them on using the button in the Stop &amp; Search section.</p>
+      <p>Enter your postcode to see all crimes reported within one mile. Use the date range to focus on a specific period, and tap any crime type, outcome or street in the sidebar to filter the map. Orange diamonds show stop and search incidents — toggle them on using the button in the Stop &amp; Search section.</p>
     </div>
 
     <div class="about-section">
       <h3>Where does the data come from?</h3>
-      <p>All crime data comes from the <strong>UK Police open data API</strong> (<a href="https://data.police.uk" target="_blank">data.police.uk</a>), maintained by the Home Office. This is the same data police forces publish for transparency and public accountability. It is updated monthly and covers all 43 territorial police forces across England and Wales, plus the Police Service of Northern Ireland.</p>
+      <p>All crime data is sourced from <a href="https://data.police.uk" target="_blank">data.police.uk</a> — a publicly available open data platform maintained by the Home Office. Police forces are legally required to publish this data for transparency and public accountability. It is updated monthly and covers all 43 territorial police forces across England and Wales, plus the Police Service of Northern Ireland.</p>
+      <p>SafetyNet is simply a lens on this public data. We do not create, modify or add to it in any way.</p>
       <p>Postcode lookups use <a href="https://postcodes.io" target="_blank">postcodes.io</a>, a free and open postcode database.</p>
     </div>
 
     <div class="about-section">
       <h3>Your privacy — no personal data, ever</h3>
-      <p>SafetyNet does <strong>not</strong> collect, store, share or sell any personal data. There are no accounts, no cookies, no tracking and no analytics. The postcode you enter is used only to look up a map location — it is never logged or stored anywhere.</p>
-      <p>All data processing happens in your browser. Nothing you enter is sent to any SafetyNet server.</p>
+      <p>SafetyNet does <strong>not</strong> collect, store, share or sell any personal data. There are no accounts and no login. The postcode you enter is used only to look up a map location — it is never logged or stored anywhere.</p>
+      <p>This site uses <strong>Google Analytics</strong> to understand how many people visit and which features are used — purely to help improve the tool. No personally identifiable information is collected. You can opt out via your browser's privacy settings or a tracker-blocking extension.</p>
     </div>
 
     <div class="about-section">
@@ -229,8 +247,8 @@
 
     <div class="about-section">
       <h3>Legal</h3>
-      <p>SafetyNet is an independent tool and is <strong>not affiliated with, endorsed by or connected to any police force, the Home Office or any government body</strong>. It is a community project built to make public data more accessible.</p>
-      <p>All data is provided under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/" target="_blank">Open Government Licence v3.0</a>. You are free to use and share the information displayed, provided you acknowledge the source (data.police.uk).</p>
+      <p>SafetyNet is an independent community project and is <strong>not affiliated with, endorsed by or connected to any police force, the Home Office or any government body</strong>. Use of the word "police" anywhere in this tool refers only to the source of the publicly available data — it does not imply any relationship with, or endorsement by, any police force.</p>
+      <p>All data is published under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/" target="_blank">Open Government Licence v3.0</a>. You are free to use and share the information displayed, provided you acknowledge the source (data.police.uk).</p>
       <p>This tool is provided in good faith for informational purposes only. It should not be used as the sole basis for any legal, insurance or property decision.</p>
     </div>
 
