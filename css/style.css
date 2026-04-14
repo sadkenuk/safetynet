@@ -331,3 +331,96 @@ h1 em { font-style: italic; font-weight: 300; color: var(--sage-light); }
 .leaflet-control-zoom a { background: var(--forest-mid) !important; border-color: var(--forest-trim) !important; color: var(--text-dim) !important; }
 .leaflet-control-zoom a:hover { background: var(--forest-edge) !important; color: var(--cream) !important; }
 .error-panel { color: #f97316; font-size: 12px; line-height: 1.6; }
+
+/* ── Mobile: bottom sheet layout ────────────────────────────────────────────── */
+.mobile-handle { display: none; }
+
+@media (max-width: 680px) {
+
+  /* Map fills entire screen */
+  #map-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+  }
+
+  /* Sidebar becomes a bottom sheet */
+  #sidebar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    width: 100%; min-width: unset;
+    max-height: 88vh;
+    border-right: none;
+    border-top: 1px solid var(--forest-trim);
+    border-radius: 14px 14px 0 0;
+    z-index: 200;
+    /* Peek: show handle + header (~240px) */
+    transform: translateY(calc(100% - 240px));
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+  }
+
+  #sidebar.drawer-open {
+    transform: translateY(0);
+    height: 88vh;
+  }
+
+  /* Drag handle */
+  .mobile-handle {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .mobile-handle-bar {
+    width: 36px; height: 4px;
+    background: var(--forest-trim);
+    border-radius: 2px;
+    transition: background 0.12s;
+  }
+
+  .mobile-handle:hover .mobile-handle-bar,
+  .mobile-handle:active .mobile-handle-bar { background: var(--sage); }
+
+  /* Make the whole sidebar scroll as one unit on mobile */
+  #sidebar {
+    overflow-y: scroll !important;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  #sidebar-scroll {
+    overflow: visible;
+    flex: unset;
+    height: auto;
+  }
+  #sidebar-footer {
+    position: sticky;
+    bottom: 0;
+    background: var(--forest);
+  }
+
+  /* Slightly tighter header on mobile */
+  #sidebar-header { padding: 14px 16px 14px; cursor: pointer; }
+  #sidebar-header input,
+  #sidebar-header button,
+  #sidebar-header select { cursor: auto; }
+
+  h1 { font-size: 22px; }
+
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .section    { padding: 14px 16px 12px; }
+
+  /* About modal full-screen on mobile */
+  .about-overlay { padding: 0; align-items: flex-end; }
+  .about-modal   {
+    max-width: 100%; width: 100%;
+    max-height: 92vh;
+    border-radius: 14px 14px 0 0;
+    padding: 28px 20px 24px;
+  }
+
+  /* Map theme button — move up so it's not hidden behind sheet */
+  .map-theme-btn { bottom: 256px !important; }
+}

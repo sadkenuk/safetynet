@@ -114,6 +114,7 @@ async function loadData() {
       `<div class="error-panel">Could not load data<br><small>${e.message}</small></div>`;
   } finally {
     setLoading(false);
+    window.dispatchEvent(new Event('safetynet:dataLoaded'));
   }
 
   // Background: stops + priorities — non-blocking
@@ -188,6 +189,30 @@ async function handlePostcodeSearch() {
   }
 }
 
+/* ── Mobile bottom sheet drawer ─────────────────────── */
+function initMobileDrawer() {
+  const sidebar = document.getElementById('sidebar');
+  const handle  = document.getElementById('mobile-handle');
+  const header  = document.getElementById('sidebar-header');
+  if (!handle) return;
+
+  const toggle = () => sidebar.classList.toggle('drawer-open');
+
+  handle.addEventListener('click', toggle);
+
+  // Tapping the header area (not inputs/buttons/selects) also toggles
+  header.addEventListener('click', e => {
+    if (window.innerWidth > 680) return;
+    if (e.target.closest('input, button, select')) return;
+    toggle();
+  });
+
+  // Auto-expand drawer after data loads so user knows there's content
+  window.addEventListener('safetynet:dataLoaded', () => {
+    if (window.innerWidth <= 680) sidebar.classList.add('drawer-open');
+  });
+}
+
 /* ── Share ───────────────────────────────────────────── */
 function initShare() {
   document.getElementById('share-btn').addEventListener('click', () => {
@@ -238,6 +263,7 @@ async function main() {
   initMap();
   initAbout();
   initShare();
+  initMobileDrawer();
   setLoading(true);
 
   try {
