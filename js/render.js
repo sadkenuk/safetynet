@@ -37,19 +37,32 @@ export function renderTrendChart(byMonth) {
   const months = Object.keys(byMonth).sort();
   const values = months.map(m => byMonth[m]);
   const max    = Math.max(...values, 1);
-  const W = 248, barH = 54, labelH = 16, H = barH + labelH;
-  const n = months.length, gap = 3;
-  const barW = Math.floor((W - gap * (n - 1)) / n);
+  const n      = months.length;
+  const W = 248, barH = 60, labelH = 14, H = barH + labelH;
+  const gap  = n > 18 ? 1 : n > 12 ? 2 : 3;
+  const barW = Math.max(2, Math.floor((W - gap * (n - 1)) / n));
+
+  // How often to show x-axis labels so they don't overlap
+  // Each label needs ~20px; step = how many bars between labels
+  const labelStep = n <= 12 ? 1 : n <= 18 ? 2 : 3;
+
+  // Show counts above bars only when bars are wide enough
+  const showCounts = barW >= 10;
 
   const bars = months.map((m, i) => {
     const v = values[i];
     const h = Math.max(Math.round((v / max) * barH), v > 0 ? 2 : 0);
     const x = i * (barW + gap);
     const y = barH - h;
+    const showLabel = (i % labelStep === 0) || i === n - 1;
+
+    // Year marker: show year on first month of each year
+    const isNewYear = i === 0 || months[i].slice(0, 4) !== months[i - 1].slice(0, 4);
+
     return `
       <rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="#4a8c62" rx="1" opacity="0.75"/>
-      <text x="${x + barW / 2}" y="${y - 3}" text-anchor="middle" font-size="8" fill="#74bf90" font-family="Azeret Mono,monospace">${v}</text>
-      <text x="${x + barW / 2}" y="${H - 1}" text-anchor="middle" font-size="8" fill="#4f6f52" font-family="Azeret Mono,monospace">${fmtMonthAbbr(m)}</text>
+      ${showCounts && v > 0 ? `<text x="${x + barW / 2}" y="${y - 3}" text-anchor="middle" font-size="7.5" fill="#74bf90" font-family="Azeret Mono,monospace">${v}</text>` : ''}
+      ${showLabel ? `<text x="${x + barW / 2}" y="${H - 1}" text-anchor="middle" font-size="7.5" fill="${isNewYear ? '#8aab8c' : '#4f6f52'}" font-family="Azeret Mono,monospace" font-weight="${isNewYear ? 'bold' : 'normal'}">${isNewYear && n > 12 ? m.slice(0, 4) : fmtMonthAbbr(m)}</text>` : ''}
     `;
   }).join('');
 
@@ -202,8 +215,10 @@ export function populateSelects(allMonths) {
     toEl.appendChild(Object.assign(document.createElement('option'), { value: m, textContent: fmtMonth(m) }));
   });
 
-  fromEl.value = allMonths[allMonths.length - 1];
-  toEl.value   = allMonths[allMonths.length - 1];
+  // Default: last 3 months
+  const last = allMonths.length - 1;
+  fromEl.value = allMonths[Math.max(0, last - 2)];
+  toEl.value   = allMonths[last];
 }
 
 /* ── Reset secondary panels to loading state ─────────── */

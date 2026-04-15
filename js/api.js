@@ -9,7 +9,9 @@ export async function getMonths() {
   if (!res.ok) throw new Error(`dates API returned HTTP ${res.status}`);
   const data = await res.json();
   if (!Array.isArray(data) || !data.length) throw new Error('No available months returned');
-  return data.map(e => e.date).filter(Boolean).sort();
+  const all = data.map(e => e.date).filter(Boolean).sort();
+  // Limit to most recent 24 months — older data is often sparse for rural areas
+  return all.slice(-24);
 }
 
 /* ── Crime data ──────────────────────────────────────── */

@@ -178,6 +178,16 @@ async function handlePostcodeSearch() {
     document.getElementById('force-eyebrow').textContent  = loc.force;
     document.getElementById('location-label').textContent = loc.name;
 
+    // Analytics: log outward code only (e.g. "SO43") — safe, no individual identified
+    // UK inward codes are always exactly 3 chars, so strip them to get outward district
+    const clean   = raw.trim().toUpperCase().replace(/\s+/g, '');
+    const outward = clean.slice(0, -3); // e.g. "SO437NY" → "SO43"
+    window.gtag?.('event', 'postcode_search', {
+      outward_code:  outward,
+      location_name: loc.name,
+      police_force:  loc.force,
+    });
+
     await loadData();
 
   } catch (e) {
@@ -226,8 +236,9 @@ function initShare() {
     } else {
       navigator.clipboard.writeText(url.toString()).then(() => {
         const btn = document.getElementById('share-btn');
+        const original = btn.innerHTML;
         btn.textContent = '✓';
-        setTimeout(() => btn.textContent = '⤴', 2000);
+        setTimeout(() => btn.innerHTML = original, 2000);
       });
     }
   });
@@ -314,8 +325,10 @@ async function main() {
       document.getElementById('range-from').value = fromParam;
       document.getElementById('range-to').value   = toParam;
     } else {
-      state.rangeFrom = state.allMonths[state.allMonths.length - 1];
-      state.rangeTo   = state.rangeFrom;
+      // Default to last 3 months so rural areas with sparse data still look meaningful
+      const last = state.allMonths.length - 1;
+      state.rangeTo   = state.allMonths[last];
+      state.rangeFrom = state.allMonths[Math.max(0, last - 2)];
     }
 
     await loadData();
