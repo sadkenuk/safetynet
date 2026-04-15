@@ -1,5 +1,5 @@
 // L is the Leaflet global, loaded via <script> tag before this module.
-import { colour, label, fmtMonth } from './config.js';
+import { colour, label, fmtMonth, severityColour, severity } from './config.js';
 import { state } from './state.js';
 
 /* ── Tile layer config ───────────────────────────────── */
@@ -75,25 +75,66 @@ export function renderCrimeMarkers(crimes) {
   const byCat = {};
   crimes.forEach(c => { (byCat[c.category] = byCat[c.category] || []).push(c); });
 
-  Object.entries(byCat).forEach(([cat, items]) => {
-    const col = colour(cat);
-    const g   = L.layerGroup();
+  // Group all crimes by location point, then render one marker per point
+  const byLocation = {};
+  crimes.forEach(c => {
+    const key = `${c.location.latitude},${c.location.longitude}`;
+    (byLocation[key] = byLocation[key] || []).push(c);
+  });
 
-    items.forEach(c => {
-      L.circleMarker(
-        [parseFloat(c.location.latitude), parseFloat(c.location.longitude)],
-        { radius: 6.5, color: col, fillColor: col, fillOpacity: 0.6, weight: 1.5 }
-      ).bindPopup(`
-        <div class="popup-eyebrow" style="color:${col}">${label(cat)}</div>
-        <div class="popup-street">${c.location.street.name}</div>
-        <div class="popup-outcome">${c.outcome_status ? c.outcome_status.category : 'No outcome recorded yet'}</div>
-        <div class="popup-month">${fmtMonth(c.month)}</div>
-      `).addTo(g);
+  const g = L.layerGroup();
+
+  Object.entries(byLocation).forEach(([key, group]) => {
+    const [lat, lng] = key.split(',').map(parseFloat);
+    const count = group.length;
+
+    // Colour by highest severity crime at this location
+    const worstCat = group.reduce((worst, c) =>
+      severity(c.category) > severity(worst) ? c.category : worst,
+      group[0].category
+    );
+    const col = severityColour(worstCat);
+
+    // Dot size: fixed 20px for single crime, grows for multiples, wide enough for 3 digits
+    const size     = count === 1 ? 20 : count < 10 ? 26 : count < 100 ? 32 : 38;
+    const fontSize = count < 10 ? 11 : count < 100 ? 9 : 8;
+    const label_   = count > 1 ? `${count}` : '';
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:${size}px; height:${size}px; border-radius:50%;
+        background:${col}; opacity:0.85;
+        border:2px solid rgba(255,255,255,0.4);
+        display:flex; align-items:center; justify-content:center;
+        font-family:'Azeret Mono',monospace; font-size:${fontSize}px;
+        font-weight:700; color:#fff; letter-spacing:-0.02em;
+        box-shadow:0 2px 6px rgba(0,0,0,0.4);
+      ">${label_}</div>`,
+      iconSize: [size, size],
+      iconAnchor: [size/2, size/2],
     });
 
-    state.crimeGroups[cat] = g;
-    g.addTo(state.map);
+    // Build popup listing all crimes at this point
+    const rows = group.map(c => `
+      <div class="popup-row" style="padding:4px 0; border-bottom:1px solid #1b3024">
+        <span style="color:${severityColour(c.category)};font-size:9px;text-transform:uppercase;
+          letter-spacing:0.1em;font-family:'Azeret Mono',monospace">${label(c.category)}</span><br>
+        <span style="font-size:11px;color:#d8e8da">${c.outcome_status?.category ?? 'No outcome recorded'}</span><br>
+        <span style="font-size:9px;color:#4f6f52">${fmtMonth(c.month)}</span>
+      </div>`).join('');
+
+    L.marker([lat, lng], { icon }).bindPopup(`
+      <div class="popup-street">${group[0].location.street.name}</div>
+      <div style="font-size:9px;color:#4f6f52;margin:3px 0 8px;font-family:'Azeret Mono',monospace">
+        ${count} incident${count > 1 ? 's' : ''} at this location
+      </div>
+      ${rows}
+    `, { maxHeight: 220 }).addTo(g);
   });
+
+  state.crimeGroups['_all'] = g;
+  g.addTo(state.map);
 }
 
 /* ── Stop & Search markers ───────────────────────────── */

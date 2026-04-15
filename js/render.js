@@ -1,4 +1,4 @@
-import { colour, label, outcomeLabel, outcomeColour, fmtMonth, fmtMonthShort, fmtMonthAbbr } from './config.js';
+import { severityColour, label, outcomeLabel, outcomeColour, fmtMonth, fmtMonthShort, fmtMonthAbbr } from './config.js';
 import { computeOutcomeRate } from './analytics.js';
 import { state } from './state.js';
 
@@ -87,7 +87,7 @@ export function renderCatList(sorted, onToggle) {
     state.hiddenCategories,
     k => k,
     k => label(k),
-    k => colour(k),
+    k => severityColour(k),
     onToggle
   );
 }

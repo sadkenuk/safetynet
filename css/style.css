@@ -130,6 +130,20 @@ h1 em { font-style: italic; font-weight: 300; color: var(--sage-light); }
   font-size: 12.5px; color: var(--text-dim); line-height: 1.6;
 }
 
+/* ── Severity table in About ── */
+.severity-table {
+  width: 100%; border-collapse: collapse; margin: 10px 0;
+}
+.severity-table td {
+  padding: 4px 6px; font-size: 12px; color: var(--text-dim); vertical-align: middle;
+}
+.severity-table td:first-child { width: 18px; }
+.severity-table td:nth-child(2) { width: 52px; font-size: 11px; color: var(--text-on); white-space: nowrap; }
+.severity-swatch {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2); vertical-align: middle;
+}
+
 .about-close-bottom {
   display: block; width: 100%; margin-top: 28px;
   font-family: 'Azeret Mono', monospace; font-size: 10px; letter-spacing: 0.06em;
@@ -314,6 +328,35 @@ h1 em { font-style: italic; font-weight: 300; color: var(--sage-light); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-label { font-family: 'Azeret Mono', monospace; font-size: 10px; color: var(--text-dim); letter-spacing: 0.08em; }
+
+/* ── Map legend ── */
+.map-legend {
+  position: absolute; bottom: 48px; right: 10px; z-index: 400;
+  background: rgba(12,27,20,0.88); backdrop-filter: blur(4px);
+  border: 1px solid var(--forest-trim); border-radius: 4px;
+  padding: 7px 9px; display: flex; flex-direction: column; gap: 3px;
+}
+.legend-title {
+  font-family: 'Azeret Mono', monospace; font-size: 7.5px;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--text-muted); margin-bottom: 2px;
+  display: flex; align-items: center; gap: 4px;
+}
+.legend-info-btn {
+  width: 13px; height: 13px; border-radius: 50%; border: 1px solid var(--forest-trim);
+  background: transparent; color: var(--text-muted); font-size: 8px;
+  cursor: pointer; line-height: 1; padding: 0; font-family: 'Azeret Mono', monospace;
+  transition: border-color 0.12s, color 0.12s;
+}
+.legend-info-btn:hover { border-color: var(--sage); color: var(--sage-light); }
+.legend-row {
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'Azeret Mono', monospace; font-size: 8px; color: var(--text-dim);
+}
+.legend-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.2);
+}
 
 /* ── Leaflet overrides ── */
 .leaflet-popup-content-wrapper {

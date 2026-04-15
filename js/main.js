@@ -248,7 +248,15 @@ function initAbout() {
   const open  = e => { e?.preventDefault(); overlay.classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
   const close = ()  => { overlay.classList.add('hidden');    document.body.style.overflow = '';       };
 
-  openBtns.forEach(btn  => btn?.addEventListener('click', open));
+  openBtns.forEach(btn => btn?.addEventListener('click', open));
+
+  // Legend ? button — open About and scroll to severity section
+  document.getElementById('legend-info-btn')?.addEventListener('click', () => {
+    open();
+    setTimeout(() => {
+      document.getElementById('about-severity')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  });
   closeBtns.forEach(btn => btn?.addEventListener('click', close));
 
   // Close on backdrop click

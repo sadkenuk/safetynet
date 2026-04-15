@@ -18,7 +18,9 @@ export const COLOURS = {
   'shoplifting':                  '#2dd4bf',
   'theft-from-the-person':        '#f472b6',
   'vehicle-crime':                '#38bdf8',
+  'violent-crime':                '#f87171',
   'violence-and-sexual-offences': '#f87171',
+  'weapons-possession':           '#7c3aed',
 };
 
 export const LABELS = {
@@ -35,7 +37,9 @@ export const LABELS = {
   'shoplifting':                  'Shoplifting',
   'theft-from-the-person':        'Theft from person',
   'vehicle-crime':                'Vehicle crime',
+  'violent-crime':                'Violence & sexual offences',
   'violence-and-sexual-offences': 'Violence & sexual offences',
+  'weapons-possession':           'Possession of weapons',
 };
 
 /* ── Outcome labels & colours ────────────────────────── */
@@ -82,6 +86,39 @@ export const OUTCOME_COLOURS = {
   'Not guilty':                '#fb923c',
   'Deprived of property':      '#a78bfa',
 };
+
+/* ── Severity scale (1=low → 5=high) ─────────────────── */
+// Used to colour map dots: blue → teal → amber → orange → red
+export const SEVERITY = {
+  'anti-social-behaviour':        1,
+  'bicycle-theft':                1,
+  'shoplifting':                  1,
+  'other-theft':                  1,
+  'other-crime':                  2,
+  'vehicle-crime':                2,
+  'public-order':                 3,
+  'drugs':                        3,
+  'theft-from-the-person':        3,
+  'criminal-damage-arson':        4,  // arson component makes this medium-high
+  'burglary':                     4,
+  'robbery':                      5,  // involves force/threat — closer to violent crime
+  'possession-of-weapons':        5,
+  'weapons-possession':           5,
+  'violent-crime':                6,
+  'violence-and-sexual-offences': 6,
+};
+
+const SEVERITY_COLOURS = {
+  1: '#4a90d9',  // blue        — low (ASB, theft, shoplifting)
+  2: '#38b2a3',  // teal        — low-medium (vehicle crime, other)
+  3: '#7bc67a',  // green       — medium (drugs, public order, theft from person)
+  4: '#d4a017',  // amber       — medium-high (burglary, robbery, criminal damage)
+  5: '#e07020',  // orange      — high (possession of weapons)
+  6: '#d63030',  // red         — very high (violent crime, sexual offences)
+};
+
+export const severityColour = cat => SEVERITY_COLOURS[SEVERITY[cat] || 2];
+export const severity       = cat => SEVERITY[cat] || 2;
 
 /* ── Helper functions ────────────────────────────────── */
 export const colour       = cat => COLOURS[cat] || '#888';

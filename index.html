@@ -183,6 +183,15 @@
   <div id="map-wrap">
     <div id="map"></div>
     <button id="map-theme-btn" class="map-theme-btn">☀ Light map</button>
+    <div class="map-legend">
+      <div class="legend-title">Severity <button class="legend-info-btn" id="legend-info-btn" title="How we classify severity">?</button></div>
+      <div class="legend-row"><span class="legend-dot" style="background:#d63030"></span>High</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#e07020"></span></div>
+      <div class="legend-row"><span class="legend-dot" style="background:#d4a017"></span></div>
+      <div class="legend-row"><span class="legend-dot" style="background:#7bc67a"></span>Mid</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#38b2a3"></span></div>
+      <div class="legend-row"><span class="legend-dot" style="background:#4a90d9"></span>Low</div>
+    </div>
     <div id="loading">
       <div class="spinner"></div>
       <div class="loading-label" id="loading-label">Fetching available dates…</div>
@@ -238,6 +247,21 @@
     <div class="about-section">
       <h3>Stop &amp; Search</h3>
       <p>Police forces are legally required to record every stop and search under the Police and Criminal Evidence Act 1984 and the Criminal Justice and Public Order Act 1994. This data is published publicly to ensure police accountability and transparency. It shows the stated reason for the stop, the outcome and basic demographic information — no names or identifying details are ever included.</p>
+    </div>
+
+    <div class="about-section" id="about-severity">
+      <h3>How we classify crime severity</h3>
+      <p>The colour of each dot on the map reflects the severity of the crime, from blue (low) through to red (high). Our classification is based on the <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice/articles/thecrimeseverityscoreexperimentalstatistics/2016-11-29" target="_blank">Home Office Crime Severity Score</a> — an official weighting system used by the ONS and Home Office to measure the relative harm of different crime types.</p>
+      <table class="severity-table">
+        <tr><td><span class="severity-swatch" style="background:#4a90d9"></span></td><td><strong>Low</strong></td><td>Anti-social behaviour, bicycle theft, shoplifting, other theft</td></tr>
+        <tr><td><span class="severity-swatch" style="background:#38b2a3"></span></td><td></td><td>Vehicle crime, other crime</td></tr>
+        <tr><td><span class="severity-swatch" style="background:#7bc67a"></span></td><td><strong>Medium</strong></td><td>Drugs, public order, theft from person</td></tr>
+        <tr><td><span class="severity-swatch" style="background:#d4a017"></span></td><td></td><td>Burglary, criminal damage &amp; arson</td></tr>
+        <tr><td><span class="severity-swatch" style="background:#e07020"></span></td><td><strong>High</strong></td><td>Robbery, possession of weapons</td></tr>
+        <tr><td><span class="severity-swatch" style="background:#d63030"></span></td><td></td><td>Violent crime, sexual offences</td></tr>
+      </table>
+      <p>Where a location has multiple crimes of different severities, the dot is coloured by the most serious crime at that point. The number inside the dot shows the total count of incidents at that location.</p>
+      <p>For the full methodology, see the <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice/articles/thecrimeseverityscoreexperimentalstatistics/2016-11-29" target="_blank">ONS Crime Severity Score</a> and the <a href="https://www.gov.uk/government/collections/crime-statistics" target="_blank">Home Office crime statistics guidance</a>.</p>
     </div>
 
     <div class="about-section">
