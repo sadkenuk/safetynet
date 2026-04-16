@@ -60,6 +60,44 @@ h1 em { font-style: italic; font-weight: 300; color: var(--sage-light); }
 .about-btn:hover, .share-btn:hover { border-color: var(--sage); color: var(--sage-light); background: var(--forest-edge); }
 .share-btn { font-size: 14px; margin-right: 4px; }
 
+/* ── API error overlay ── */
+.api-error-overlay {
+  position: fixed; inset: 0; z-index: 3000;
+  background: rgba(8, 18, 12, 0.94);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.2s ease;
+}
+.api-error-overlay.hidden { display: none; }
+.api-error-box {
+  text-align: center;
+  max-width: 360px;
+  padding: 36px 32px;
+  background: var(--forest-mid);
+  border: 1px solid var(--forest-trim);
+  border-radius: 6px;
+}
+.api-error-icon { font-size: 32px; margin-bottom: 14px; color: #e07020; }
+.api-error-title {
+  font-family: 'Spectral', serif; font-size: 18px; font-weight: 600;
+  color: var(--cream); margin-bottom: 10px;
+}
+.api-error-msg {
+  font-size: 13px; color: var(--text-dim); line-height: 1.6; margin-bottom: 22px;
+}
+.api-error-retry {
+  display: inline-block; padding: 8px 22px;
+  background: transparent; border: 1px solid var(--sage);
+  color: var(--sage-light); border-radius: 4px;
+  font-family: 'Azeret Mono', monospace; font-size: 12px; letter-spacing: 0.06em;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.api-error-retry:hover { background: var(--forest-edge); color: var(--cream); }
+.api-error-retry:disabled { opacity: 0.5; cursor: not-allowed; }
+
+#sidebar.sidebar-hidden { display: none; }
+
 /* ── About overlay ── */
 .about-overlay {
   position: fixed; inset: 0; z-index: 2000;
@@ -392,7 +430,7 @@ h1 em { font-style: italic; font-weight: 300; color: var(--sage-light); }
     position: fixed;
     bottom: 0; left: 0; right: 0;
     width: 100%; min-width: unset;
-    max-height: 88vh;
+    height: 88vh; max-height: 88vh;
     border-right: none;
     border-top: 1px solid var(--forest-trim);
     border-radius: 14px 14px 0 0;
@@ -403,10 +441,8 @@ h1 em { font-style: italic; font-weight: 300; color: var(--sage-light); }
     box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
   }
 
-  #sidebar.drawer-open {
-    transform: translateY(0);
-    height: 88vh;
-  }
+  #sidebar.drawer-open   { transform: translateY(0); }
+  #sidebar.drawer-hidden { transform: translateY(calc(100% - 52px)); }
 
   /* Drag handle */
   .mobile-handle {

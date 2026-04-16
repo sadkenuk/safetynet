@@ -206,20 +206,93 @@ function initMobileDrawer() {
   const header  = document.getElementById('sidebar-header');
   if (!handle) return;
 
-  const toggle = () => sidebar.classList.toggle('drawer-open');
+  // Three states: 'hidden' (just handle), 'peek' (header visible), 'open' (full)
+  let state = 'peek';
 
-  handle.addEventListener('click', toggle);
+  function snapOffset(s) {
+    const h = sidebar.offsetHeight;
+    if (s === 'open')   return 0;
+    if (s === 'peek')   return h - 240;
+    /* hidden */        return h - 52;
+  }
+
+  function setState(s, animate = true) {
+    state = s;
+    if (!animate) sidebar.style.transition = 'none';
+    sidebar.style.transform = '';
+    sidebar.classList.toggle('drawer-open',   s === 'open');
+    sidebar.classList.toggle('drawer-hidden', s === 'hidden');
+    if (!animate) requestAnimationFrame(() => { sidebar.style.transition = ''; });
+  }
+
+  // Tap: hidden→peek, peek→open, open→peek
+  function tapToggle() {
+    setState(state === 'open' ? 'peek' : state === 'hidden' ? 'peek' : 'open');
+  }
+
+  // ── Touch drag ──────────────────────────────────────
+  let startY = 0, startOffset = 0, lastY = 0, lastT = 0, vel = 0, didDrag = false;
+
+  handle.addEventListener('touchstart', e => {
+    startY      = e.touches[0].clientY;
+    startOffset = snapOffset(state);
+    lastY       = startY;
+    lastT       = Date.now();
+    vel         = 0;
+    didDrag     = false;
+    sidebar.style.transition = 'none';
+  }, { passive: true });
+
+  handle.addEventListener('touchmove', e => {
+    const dy  = e.touches[0].clientY - startY;
+    const now = Date.now();
+    const dt  = now - lastT;
+    if (dt > 0) vel = (e.touches[0].clientY - lastY) / dt;
+    lastY = e.touches[0].clientY;
+    lastT = now;
+
+    if (Math.abs(dy) > 4) didDrag = true;
+    if (!didDrag) return;
+
+    const h      = sidebar.offsetHeight;
+    const clamped = Math.max(0, Math.min(h - 52, startOffset + dy));
+    sidebar.style.transform = `translateY(${clamped}px)`;
+  }, { passive: true });
+
+  handle.addEventListener('touchend', e => {
+    sidebar.style.transition = '';
+
+    if (!didDrag) { tapToggle(); return; }
+
+    const dy         = e.changedTouches[0].clientY - startY;
+    const currentOff = startOffset + dy;
+    const FLICK      = 0.35; // px/ms
+
+    let next;
+    if (vel > FLICK) {
+      next = state === 'open' ? 'peek' : 'hidden';
+    } else if (vel < -FLICK) {
+      next = state === 'hidden' ? 'peek' : 'open';
+    } else {
+      // Snap to nearest snap point
+      const states = ['open', 'peek', 'hidden'];
+      next = states.reduce((best, s) =>
+        Math.abs(currentOff - snapOffset(s)) < Math.abs(currentOff - snapOffset(best)) ? s : best
+      );
+    }
+    setState(next);
+  });
 
   // Tapping the header area (not inputs/buttons/selects) also toggles
   header.addEventListener('click', e => {
     if (window.innerWidth > 680) return;
     if (e.target.closest('input, button, select')) return;
-    toggle();
+    tapToggle();
   });
 
   // Auto-expand drawer after data loads so user knows there's content
   window.addEventListener('safetynet:dataLoaded', () => {
-    if (window.innerWidth <= 680) sidebar.classList.add('drawer-open');
+    if (window.innerWidth <= 680) setState('open');
   });
 }
 
@@ -277,38 +350,19 @@ function initAbout() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 }
 
-/* ── Boot ────────────────────────────────────────────── */
-async function main() {
-  initMap();
-  initAbout();
-  initShare();
-  initMobileDrawer();
+/* ── Boot: data fetch (retryable) ────────────────────── */
+async function bootData() {
+  const errorOverlay = document.getElementById('api-error-overlay');
+  const retryBtn     = document.getElementById('api-error-retry-btn');
+  const sidebar      = document.getElementById('sidebar');
+
+  errorOverlay.classList.add('hidden');
+  sidebar.classList.remove('sidebar-hidden');
   setLoading(true);
 
   try {
     state.allMonths = await getMonths();
     populateSelects(state.allMonths);
-
-    document.getElementById('apply-range').addEventListener('click', applyRange);
-
-    // Category All/None
-    document.getElementById('btn-cats-all').addEventListener('click',  () => setAllCategories(true));
-    document.getElementById('btn-cats-none').addEventListener('click', () => setAllCategories(false));
-
-    // Outcome All/None
-    document.getElementById('btn-outcomes-all').addEventListener('click',  () => setAllOutcomes(true));
-    document.getElementById('btn-outcomes-none').addEventListener('click', () => setAllOutcomes(false));
-
-    // Street All/None
-    document.getElementById('btn-streets-all').addEventListener('click',  () => setAllStreets(true));
-    document.getElementById('btn-streets-none').addEventListener('click', () => setAllStreets(false));
-
-    document.getElementById('stops-map-btn').addEventListener('click', toggleStopSearch);
-    document.getElementById('map-theme-btn').addEventListener('click', toggleMapTheme);
-    document.getElementById('postcode-btn').addEventListener('click', handlePostcodeSearch);
-    document.getElementById('postcode-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') handlePostcodeSearch();
-    });
 
     // Load from shared URL params if present
     const params = new URLSearchParams(window.location.search);
@@ -335,16 +389,45 @@ async function main() {
 
   } catch (e) {
     console.error(e);
-    document.getElementById('loading').innerHTML = `
-      <div style="text-align:center;padding:0 24px">
-        <div style="font-size:28px;margin-bottom:10px">⚠</div>
-        <div style="color:#f97316;font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.6">
-          Could not load crime data<br>
-          <small style="color:#4f6f52">${e.message}</small>
-        </div>
-      </div>
-    `;
+    setLoading(false);
+    sidebar.classList.add('sidebar-hidden');
+    errorOverlay.classList.remove('hidden');
+  } finally {
+    retryBtn.disabled = false;
+    retryBtn.textContent = 'Retry';
   }
+}
+
+/* ── Boot: one-time init ─────────────────────────────── */
+async function main() {
+  initMap();
+  initAbout();
+  initShare();
+  initMobileDrawer();
+
+  // Wire up all UI controls once
+  document.getElementById('apply-range').addEventListener('click', applyRange);
+  document.getElementById('btn-cats-all').addEventListener('click',    () => setAllCategories(true));
+  document.getElementById('btn-cats-none').addEventListener('click',   () => setAllCategories(false));
+  document.getElementById('btn-outcomes-all').addEventListener('click',  () => setAllOutcomes(true));
+  document.getElementById('btn-outcomes-none').addEventListener('click', () => setAllOutcomes(false));
+  document.getElementById('btn-streets-all').addEventListener('click',  () => setAllStreets(true));
+  document.getElementById('btn-streets-none').addEventListener('click', () => setAllStreets(false));
+  document.getElementById('stops-map-btn').addEventListener('click', toggleStopSearch);
+  document.getElementById('map-theme-btn').addEventListener('click', toggleMapTheme);
+  document.getElementById('postcode-btn').addEventListener('click', handlePostcodeSearch);
+  document.getElementById('postcode-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handlePostcodeSearch();
+  });
+
+  document.getElementById('api-error-retry-btn').addEventListener('click', () => {
+    const btn = document.getElementById('api-error-retry-btn');
+    btn.disabled = true;
+    btn.textContent = 'Retrying…';
+    bootData();
+  });
+
+  await bootData();
 }
 
 main();
